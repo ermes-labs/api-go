@@ -6,13 +6,12 @@ import (
 )
 
 func (n *Node) CreateHTTPHandler(
-	cmd Commands,
 	opt HTTPHandlerOptions,
 	handler func(w http.ResponseWriter, req *http.Request, sessionToken SessionToken) error,
 ) func(w http.ResponseWriter, req *http.Request) {
 
 	return func(w http.ResponseWriter, req *http.Request) {
-		n.HTTPHandle(cmd, w, req, opt, handler)
+		n.HTTPHandle(w, req, opt, handler)
 	}
 }
 
@@ -29,7 +28,6 @@ func (n *Node) CreateHTTPHandler(
 //  2. The session has been offloaded and the callback is not run.
 //  3. There is an error and the callback is not run.
 func (n *Node) HTTPHandle(
-	cmd Commands,
 	w http.ResponseWriter,
 	req *http.Request,
 	opt HTTPHandlerOptions,
@@ -49,7 +47,7 @@ func (n *Node) HTTPHandle(
 	// able to make the request to the correct node, redirect the request to the
 	// correct node.
 	if sessionToken != nil {
-		if redirect, destination := n.dummyClientNeedsRedirect(cmd, req.Context(), sessionToken); redirect {
+		if redirect, destination := n.dummyClientNeedsRedirect(req.Context(), sessionToken); redirect {
 			// Set the session sessionToken in the response.
 			opt.setSessionTokenBytes(w, sessionTokenBytes)
 			// Create the redirect response.
@@ -62,7 +60,7 @@ func (n *Node) HTTPHandle(
 	// If the client does not already have a session.
 	if sessionToken == nil {
 		// If the node must redirect new requests, redirect the request.
-		if redirect, destination := cmd.RedirectNewRequests(req.Context()); redirect {
+		if redirect, destination := n.RedirectNewRequests(req.Context()); redirect {
 			// Create the redirect response.
 			opt.redirectResponse(w, req, destination)
 			// Return.
@@ -72,7 +70,6 @@ func (n *Node) HTTPHandle(
 		// Create a new session and acquire it to run the handler callback,
 		// then update the session token.
 		_, err = n.CreateAndAcquireSession(
-			cmd,
 			// Use the request context.
 			req.Context(),
 			// Create the options.
@@ -96,7 +93,6 @@ func (n *Node) HTTPHandle(
 		var offloadedTo *SessionLocation = nil
 		// Acquire the session.
 		offloadedTo, err = n.AcquireSession(
-			cmd,
 			// Use the request context.
 			req.Context(),
 			// Pass the session token.
@@ -134,6 +130,6 @@ func (n *Node) HTTPHandle(
 
 // Return if the session token belongs to a dummy client that was not able to
 // make the request to the correct node, and the sessionLocation of the correct node.
-func (n *Node) dummyClientNeedsRedirect(cmd Commands, ctx context.Context, sessionToken *SessionToken) (bool, SessionLocation) {
+func (n *Node) dummyClientNeedsRedirect(ctx context.Context, sessionToken *SessionToken) (bool, SessionLocation) {
 	return sessionToken.Host != n.Host, sessionToken.SessionLocation
 }

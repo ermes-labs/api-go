@@ -21,7 +21,6 @@ type GarbageCollectSessionsCommands interface {
 // Garbage collect sessions, the options to define how the sessions are garbage
 // collected.
 func (n *Node) GarbageCollectSessions(
-	cmd GarbageCollectSessionsCommands,
 	ctx context.Context,
 	opt GarbageCollectSessionsOptions,
 ) error {
@@ -30,7 +29,7 @@ func (n *Node) GarbageCollectSessions(
 	// Garbage collect sessions.
 	for {
 		// Garbage collect sessions.
-		cursor, err := cmd.GarbageCollectSessions(ctx, opt, cursor)
+		cursor, err := n.cmd.GarbageCollectSessions(ctx, opt, cursor)
 
 		// If there is an error, return it.
 		if err != nil {

@@ -41,13 +41,12 @@ type AcquireSessionCommands interface {
 //  3. There is an error and the callback is not run. In this case the error is
 //     returned (e.g. when the session is offloading).
 func (n *Node) AcquireSession(
-	cmd AcquireSessionCommands,
 	ctx context.Context,
 	sessionToken SessionToken,
 	opt AcquireSessionOptions,
 	ifAcquired func() error,
 ) (*SessionLocation, error) {
-	offloadedTo, err := cmd.AcquireSession(ctx, sessionToken.SessionId, opt)
+	offloadedTo, err := n.cmd.AcquireSession(ctx, sessionToken.SessionId, opt)
 
 	// If there is an error, return it.
 	if err != nil {
@@ -61,7 +60,7 @@ func (n *Node) AcquireSession(
 
 	// Defer the release of the session metadata.
 	defer func() {
-		cmd.ReleaseSession(ctx, sessionToken.SessionId, opt)
+		n.cmd.ReleaseSession(ctx, sessionToken.SessionId, opt)
 	}()
 
 	// Run the ifAcquired callback and return its return value.

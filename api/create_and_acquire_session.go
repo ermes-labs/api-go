@@ -21,13 +21,12 @@ type CreateAndAcquireSessionCommands interface {
 // If the callback is run, a SessionToken is returned, otherwise an error is
 // returned.
 func (n *Node) CreateAndAcquireSession(
-	cmd CreateAndAcquireSessionCommands,
 	ctx context.Context,
 	opt CreateAndAcquireSessionOptions,
 	ifCreatedAndAcquired func(sessionToken SessionToken) error,
 ) (SessionToken, error) {
 	// Create and acquire the session.
-	sessionId, err := cmd.CreateAndAcquireSession(ctx, opt)
+	sessionId, err := n.cmd.CreateAndAcquireSession(ctx, opt)
 
 	// If there is an error, return it.
 	if err != nil {
@@ -36,7 +35,7 @@ func (n *Node) CreateAndAcquireSession(
 
 	// Defer the release of the session.
 	defer func() {
-		cmd.ReleaseSession(ctx, sessionId, opt.AcquireSessionOptions)
+		n.cmd.ReleaseSession(ctx, sessionId, opt.AcquireSessionOptions)
 	}()
 
 	// Create a new session token.
@@ -61,7 +60,6 @@ func (n *Node) CreateAndAcquireSession(
 //  3. There is an error and the callback is not run. In this case the error is
 //     returned.
 func (n *Node) MaybeCreateAndAcquireSession(
-	cmd CreateAndAcquireSessionCommands,
 	ctx context.Context,
 	sessionToken *SessionToken,
 	opt CreateAndAcquireSessionOptions,
@@ -69,11 +67,11 @@ func (n *Node) MaybeCreateAndAcquireSession(
 ) (_ *SessionLocation, err error) {
 	// If there is no session token, create and acquire a session.
 	if (*sessionToken == SessionToken{}) {
-		*sessionToken, err = n.CreateAndAcquireSession(cmd, ctx, opt, ifAcquired)
+		*sessionToken, err = n.CreateAndAcquireSession(ctx, opt, ifAcquired)
 		// return the error if there is one.
 		return nil, err
 	}
 
 	// Acquire the session.
-	return n.AcquireSession(cmd, ctx, *sessionToken, opt.AcquireSessionOptions, func() error { return ifAcquired(*sessionToken) })
+	return n.AcquireSession(ctx, *sessionToken, opt.AcquireSessionOptions, func() error { return ifAcquired(*sessionToken) })
 }

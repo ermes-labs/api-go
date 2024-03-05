@@ -19,8 +19,24 @@ type CreateSessionOptions struct {
 	sessionId *string
 }
 
+// Get the geographic coordinates associated with the client that owns the session.
+func (o CreateSessionOptions) ClientGeoCoordinates() *infrastructure.GeoCoordinates {
+	return o.clientGeoCoordinates
+}
+
+// Get the expiration time.
+func (o CreateSessionOptions) ExpiresAt() *int64 {
+	return o.expiresAt
+}
+
+// Get the session ID.
+func (o CreateSessionOptions) SessionId() *string {
+	return o.sessionId
+}
+
 // Builder for CreateSessionOptions.
 type CreateSessionOptionsBuilder struct {
+	*CreateSessionOptionsBuilder
 	options CreateSessionOptions
 }
 

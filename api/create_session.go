@@ -16,11 +16,10 @@ type CreateSessionCommands interface {
 // Create a new session, the options to define how the session is created. If no
 // error is returned, a new session token is returned.
 func (n *Node) CreateSession(
-	cmd CreateSessionCommands,
 	ctx context.Context,
 	opt CreateSessionOptions,
 ) (SessionToken, error) {
-	sessionId, err := cmd.CreateSession(ctx, opt)
+	sessionId, err := n.cmd.CreateSession(ctx, opt)
 
 	// If there is an error, return it.
 	if err != nil {

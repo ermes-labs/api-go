@@ -26,14 +26,13 @@ type OnloadSessionCommands interface {
 // errors:
 // - ErrSessionAlreadyOnloaded: If the session is already onloaded.
 func (n *Node) OnloadSession(
-	cmd OnloadSessionCommands,
 	ctx context.Context,
 	metadata SessionMetadata,
 	reader io.Reader,
 	opt OnloadSessionOptions,
 ) (SessionLocation, error) {
 	// Start the onload of the session.
-	sessionId, err := cmd.OnloadSession(ctx, metadata, reader, opt)
+	sessionId, err := n.cmd.OnloadSession(ctx, metadata, reader, opt)
 
 	// If there is an error, return it.
 	if err != nil {

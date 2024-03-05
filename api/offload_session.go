@@ -31,7 +31,6 @@ type OffloadSessionCommands interface {
 // Offloads a session to a new location. The function returns the new location of
 // the session.
 func (n *Node) OffloadSession(
-	cmd OffloadSessionCommands,
 	ctx context.Context,
 	sessionId string,
 	opt OffloadSessionOptions,
@@ -41,7 +40,7 @@ func (n *Node) OffloadSession(
 	ctx, cancel := context.WithCancel(ctx)
 
 	// Read the metadata of the session.
-	metadata, err := cmd.GetSessionMetadata(ctx, sessionId)
+	metadata, err := n.cmd.GetSessionMetadata(ctx, sessionId)
 	// If there is an error, return it.
 	if err != nil {
 		cancel()
@@ -49,7 +48,7 @@ func (n *Node) OffloadSession(
 	}
 
 	// Start the offload of the session.
-	reader, loader, err := cmd.OffloadSession(ctx, sessionId, opt)
+	reader, loader, err := n.cmd.OffloadSession(ctx, sessionId, opt)
 	// If there is an error, return it.
 	if err != nil {
 		cancel()
@@ -92,7 +91,7 @@ func (n *Node) OffloadSession(
 	}
 
 	// Confirm the offload of the session.
-	err = cmd.ConfirmSessionOffload(ctx, sessionId, newLocation, opt)
+	err = n.cmd.ConfirmSessionOffload(ctx, sessionId, newLocation, opt)
 	// If there is an error, return it.
 	if err != nil {
 		// TODO: What to do here?
