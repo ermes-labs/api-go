@@ -31,12 +31,13 @@ func NewAcquireSessionOptionsBuilder() *AcquireSessionOptionsBuilder {
 	}
 }
 
+// Acquire a session that can be offloaded during the acquisition.
 func (builder *AcquireSessionOptionsBuilder) AllowOffloading() *AcquireSessionOptionsBuilder {
 	builder.options.allowOffloading = true
 	return builder
 }
 
-// Will acquire the session with read-only permissions.
+// Will acquire the session even if it is offloading.
 func (builder *AcquireSessionOptionsBuilder) AllowWhileOffloading() *AcquireSessionOptionsBuilder {
 	builder.options.allowWhileOffloading = true
 	return builder

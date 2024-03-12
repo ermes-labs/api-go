@@ -11,7 +11,7 @@ type AcquireSessionCommands interface {
 	// the session is acquired.
 	// errors:
 	// - ErrSessionNotFound: If no session with the given id is found.
-	// - ErrSessionIsOffloading: If the session is offloading and the required permission is read-write.
+	// - ErrSessionIsOffloading: If the session is offloading and cannot be acquired.
 	AcquireSession(
 		ctx context.Context,
 		sessionId string,

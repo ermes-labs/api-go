@@ -1,13 +1,15 @@
-package api
+package http
 
 import (
 	"net/http"
+
+	"github.com/ermes-labs/api-go/api"
 )
 
 // Options for the handler.
-type HTTPHandlerOptions struct {
-	AcquireSessionOptions              func(req *http.Request) AcquireSessionOptions
-	CreateSessionOptions               func(req *http.Request) CreateSessionOptions
+type HandlerOptions struct {
+	AcquireSessionOptions              func(req *http.Request) api.AcquireSessionOptions
+	CreateSessionOptions               func(req *http.Request) api.CreateSessionOptions
 	getSessionTokenBytes               func(req *http.Request) []byte
 	setSessionTokenBytes               func(w http.ResponseWriter, sessionTokenBytes []byte)
 	redirectResponse                   func(w http.ResponseWriter, req *http.Request, host string)
@@ -15,63 +17,63 @@ type HTTPHandlerOptions struct {
 	internalServerErrorResponse        func(w http.ResponseWriter, err error)
 }
 
-// Builder for HTTPHandlerOptions.
-type HTTPHandlerOptionsBuilder struct {
-	options HTTPHandlerOptions
+// Builder for HandlerOptions.
+type HandlerOptionsBuilder struct {
+	options HandlerOptions
 }
 
-// Create a new HTTPHandlerOptionsBuilder.
-func NewHTTPHandlerOptionsBuilder() *HTTPHandlerOptionsBuilder {
-	return &HTTPHandlerOptionsBuilder{
-		options: DefaultHTTPHandlerOptions(),
+// Create a new HandlerOptionsBuilder.
+func NewHandlerOptionsBuilder() *HandlerOptionsBuilder {
+	return &HandlerOptionsBuilder{
+		options: DefaultHandlerOptions(),
 	}
 }
 
 // Set the AcquireSessionOptions function.
-func (builder *HTTPHandlerOptionsBuilder) AcquireSessionOptions(AcquireSessionOptions func(req *http.Request) AcquireSessionOptions) *HTTPHandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) AcquireSessionOptions(AcquireSessionOptions func(req *http.Request) api.AcquireSessionOptions) *HandlerOptionsBuilder {
 	builder.options.AcquireSessionOptions = AcquireSessionOptions
 	return builder
 }
 
 // Set the CreateSessionOptions function.
-func (builder *HTTPHandlerOptionsBuilder) CreateSessionOptions(CreateSessionOptions func(req *http.Request) CreateSessionOptions) *HTTPHandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) CreateSessionOptions(CreateSessionOptions func(req *http.Request) api.CreateSessionOptions) *HandlerOptionsBuilder {
 	builder.options.CreateSessionOptions = CreateSessionOptions
 	return builder
 }
 
 // Set the getSessionTokenBytes function.
-func (builder *HTTPHandlerOptionsBuilder) GetSessionTokenBytes(getSessionTokenBytes func(req *http.Request) []byte) *HTTPHandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) GetSessionTokenBytes(getSessionTokenBytes func(req *http.Request) []byte) *HandlerOptionsBuilder {
 	builder.options.getSessionTokenBytes = getSessionTokenBytes
 	return builder
 }
 
 // Set the setSessionTokenBytes function.
-func (builder *HTTPHandlerOptionsBuilder) SetSessionTokenBytes(setSessionTokenBytes func(w http.ResponseWriter, sessionTokenBytes []byte)) *HTTPHandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) SetSessionTokenBytes(setSessionTokenBytes func(w http.ResponseWriter, sessionTokenBytes []byte)) *HandlerOptionsBuilder {
 	builder.options.setSessionTokenBytes = setSessionTokenBytes
 	return builder
 }
 
 // Set the redirectResponse function.
-func (builder *HTTPHandlerOptionsBuilder) RedirectResponse(redirectResponse func(w http.ResponseWriter, req *http.Request, host string)) *HTTPHandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) RedirectResponse(redirectResponse func(w http.ResponseWriter, req *http.Request, host string)) *HandlerOptionsBuilder {
 	builder.options.redirectResponse = redirectResponse
 	return builder
 }
 
 // Set the malformedSessionTokenErrorResponse function.
-func (builder *HTTPHandlerOptionsBuilder) MalformedSessionTokenErrorResponse(malformedSessionTokenErrorResponse func(w http.ResponseWriter, err error)) *HTTPHandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) MalformedSessionTokenErrorResponse(malformedSessionTokenErrorResponse func(w http.ResponseWriter, err error)) *HandlerOptionsBuilder {
 	builder.options.malformedSessionTokenErrorResponse = malformedSessionTokenErrorResponse
 	return builder
 }
 
 // Set the internalServerErrorResponse function.
-func (builder *HTTPHandlerOptionsBuilder) InternalServerErrorResponse(internalServerErrorResponse func(w http.ResponseWriter, err error)) *HTTPHandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) InternalServerErrorResponse(internalServerErrorResponse func(w http.ResponseWriter, err error)) *HandlerOptionsBuilder {
 	builder.options.internalServerErrorResponse = internalServerErrorResponse
 	return builder
 }
 
 // Set the getSessionTokenBytes and setSessionTokenBytes functions to use the
 // given header name to get and set the session token.
-func (builder *HTTPHandlerOptionsBuilder) SessionTokenHeaderName(header string) *HTTPHandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) SessionTokenHeaderName(header string) *HandlerOptionsBuilder {
 	builder.options.getSessionTokenBytes = func(req *http.Request) []byte {
 		return GetSessionTokenBytesFromHeader(req, header)
 	}
@@ -81,21 +83,21 @@ func (builder *HTTPHandlerOptionsBuilder) SessionTokenHeaderName(header string) 
 	return builder
 }
 
-// Build the HTTPHandlerOptions.
-func (builder *HTTPHandlerOptionsBuilder) Build() HTTPHandlerOptions {
+// Build the HandlerOptions.
+func (builder *HandlerOptionsBuilder) Build() HandlerOptions {
 	return builder.options
 }
 
-// DefaultHTTPHandlerOptions returns the default options for the handler.
-func DefaultHTTPHandlerOptions() HTTPHandlerOptions {
-	return HTTPHandlerOptions{
-		AcquireSessionOptions: func(_ *http.Request) AcquireSessionOptions {
+// DefaultHandlerOptions returns the default options for the handler.
+func DefaultHandlerOptions() HandlerOptions {
+	return HandlerOptions{
+		AcquireSessionOptions: func(_ *http.Request) api.AcquireSessionOptions {
 			// Return the default options to acquire a session.
-			return DefaultAcquireSessionOptions()
+			return api.DefaultAcquireSessionOptions()
 		},
-		CreateSessionOptions: func(_ *http.Request) CreateSessionOptions {
+		CreateSessionOptions: func(_ *http.Request) api.CreateSessionOptions {
 			// Return the default options to create a session.
-			return DefaultCreateSessionOptions()
+			return api.DefaultCreateSessionOptions()
 		},
 		getSessionTokenBytes: func(req *http.Request) []byte {
 			return GetSessionTokenBytesFromHeader(req, DefaultTokenHeaderName)

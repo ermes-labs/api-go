@@ -14,18 +14,26 @@ type OffloadSessionCommands interface {
 	// required. The loader function will be run concurrently to the reader process.
 	// Errors can flow from the loader function to the reader passing trough the
 	// io.Reader, vice-versa the loader should stop if the context is canceled.
+	// errors:
+	// - ErrSessionNotFound: If no session with the given id is found.
+	// - ErrSessionIsOffloading: If the session is already offloading.
+	// - ErrUnableToOffloadAcquiredSession: If the session is unable to offload because it is acquired.
 	OffloadSession(
 		ctx context.Context,
 		id string,
 		opt OffloadSessionOptions,
-	) (io.ReadCloser, func(), error)
+	) (sessionDataReadCloser io.ReadCloser, loader func(), err error)
 	// Confirms the offload of a session.
+	// errors:
+	// - ErrSessionNotFound: If no session with the given id is found.
 	ConfirmSessionOffload(
 		ctx context.Context,
 		id string,
 		newLocation SessionLocation,
 		opt OffloadSessionOptions,
-	) error
+		// TODO: extract into another API.
+		notifyLastVisitedNode func(oldLocation SessionLocation) (bool, error),
+	) (err error)
 }
 
 // Offloads a session to a new location. The function returns the new location of
@@ -35,7 +43,8 @@ func (n *Node) OffloadSession(
 	sessionId string,
 	opt OffloadSessionOptions,
 	onload func(context.Context, SessionMetadata, io.Reader) (SessionLocation, error),
-) error {
+	notifyLastVisitedNode func(oldLocation SessionLocation) (bool, error),
+) (SessionLocation, error) {
 	// Create a new context to cancel the loader if the context is canceled.
 	ctx, cancel := context.WithCancel(ctx)
 
@@ -44,7 +53,7 @@ func (n *Node) OffloadSession(
 	// If there is an error, return it.
 	if err != nil {
 		cancel()
-		return err
+		return SessionLocation{}, err
 	}
 
 	// Start the offload of the session.
@@ -52,7 +61,7 @@ func (n *Node) OffloadSession(
 	// If there is an error, return it.
 	if err != nil {
 		cancel()
-		return err
+		return SessionLocation{}, err
 	}
 
 	// If the loader failed, default to false.
@@ -79,7 +88,7 @@ func (n *Node) OffloadSession(
 	reader.Close()
 	// If there is an error, return it.
 	if err != nil {
-		return err
+		return SessionLocation{}, err
 	}
 
 	// If there was an error during the streaming process but for some reason the
@@ -91,14 +100,14 @@ func (n *Node) OffloadSession(
 	}
 
 	// Confirm the offload of the session.
-	err = n.cmd.ConfirmSessionOffload(ctx, sessionId, newLocation, opt)
+	err = n.cmd.ConfirmSessionOffload(ctx, sessionId, newLocation, opt, notifyLastVisitedNode)
 	// If there is an error, return it.
 	if err != nil {
 		// TODO: What to do here?
 	}
 
 	// Return the metadata and the reader.
-	return nil
+	return newLocation, nil
 }
 
 // Wrap the readCloser with a check function.

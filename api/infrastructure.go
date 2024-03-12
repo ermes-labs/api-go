@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+
+	"github.com/ermes-labs/api-go/infrastructure"
 )
 
 type ResourcesUsage = map[string]float64
@@ -9,6 +11,16 @@ type ResourcesUsageIndex = map[string]float64
 
 // Commands to get and update the resources usage of the sessions and the nodes.
 type ResourcesUsageCommands interface {
+	// Load the infrastructure.
+	LoadInfrastructure(
+		ctx context.Context,
+		infrastructure infrastructure.Infrastructure,
+	) (err error)
+	// Get the lookup node for a session offloading.
+	FindLookupNode(
+		ctx context.Context,
+		sessionId string,
+	) (nodeId string, err error)
 	// Get the resources usage of a session.
 	// errors:
 	// - ErrSessionNotFound: If no session with the given id is found.
@@ -44,6 +56,22 @@ type ResourcesUsageCommands interface {
 	RedirectNewRequests(
 		ctx context.Context,
 	) (redirect bool, host string)
+}
+
+// load the infrastructure.
+func (n *Node) LoadInfrastructure(
+	ctx context.Context,
+	infrastructure infrastructure.Infrastructure,
+) (err error) {
+	return n.cmd.LoadInfrastructure(ctx, infrastructure)
+}
+
+// Get the lookup node for a session offloading.
+func (n *Node) FindLookupNode(
+	ctx context.Context,
+	sessionId string,
+) (nodeId string, err error) {
+	return n.cmd.FindLookupNode(ctx, sessionId)
 }
 
 // Get the resources usage of a session.

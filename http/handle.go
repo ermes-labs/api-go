@@ -1,17 +1,20 @@
-package api
+package http
 
 import (
 	"context"
 	"net/http"
+
+	"github.com/ermes-labs/api-go/api"
 )
 
-func (n *Node) CreateHTTPHandler(
-	opt HTTPHandlerOptions,
-	handler func(w http.ResponseWriter, req *http.Request, sessionToken SessionToken) error,
+func CreateHandler(
+	n *api.Node,
+	opt HandlerOptions,
+	handler func(w http.ResponseWriter, req *http.Request, sessionToken api.SessionToken) error,
 ) func(w http.ResponseWriter, req *http.Request) {
 
 	return func(w http.ResponseWriter, req *http.Request) {
-		n.HTTPHandle(w, req, opt, handler)
+		Handle(n, w, req, opt, handler)
 	}
 }
 
@@ -27,15 +30,16 @@ func (n *Node) CreateHTTPHandler(
 //     1.2. The callback returns nil and the response is returned.
 //  2. The session has been offloaded and the callback is not run.
 //  3. There is an error and the callback is not run.
-func (n *Node) HTTPHandle(
+func Handle(
+	n *api.Node,
 	w http.ResponseWriter,
 	req *http.Request,
-	opt HTTPHandlerOptions,
-	handler func(w http.ResponseWriter, req *http.Request, sessionToken SessionToken) error) {
+	opt HandlerOptions,
+	handler func(w http.ResponseWriter, req *http.Request, sessionToken api.SessionToken) error) {
 	// Try to get the session token from the request.
 	sessionTokenBytes := opt.getSessionTokenBytes(req)
 	// If there is a session token and it belongs to a dummy client that ws not
-	sessionToken, err := UnmarshallSessionToken(sessionTokenBytes)
+	sessionToken, err := api.UnmarshallSessionToken(sessionTokenBytes)
 
 	// If there is an error, return an error response.
 	if err != nil {
@@ -47,7 +51,7 @@ func (n *Node) HTTPHandle(
 	// able to make the request to the correct node, redirect the request to the
 	// correct node.
 	if sessionToken != nil {
-		if redirect, destination := n.dummyClientNeedsRedirect(req.Context(), sessionToken); redirect {
+		if redirect, destination := dummyClientNeedsRedirect(n, req.Context(), sessionToken); redirect {
 			// Set the session sessionToken in the response.
 			opt.setSessionTokenBytes(w, sessionTokenBytes)
 			// Create the redirect response.
@@ -66,20 +70,22 @@ func (n *Node) HTTPHandle(
 			// Return.
 			return
 		}
+	}
 
+	if sessionToken == nil {
 		// Create a new session and acquire it to run the handler callback,
 		// then update the session token.
 		_, err = n.CreateAndAcquireSession(
 			// Use the request context.
 			req.Context(),
 			// Create the options.
-			CreateAndAcquireSessionOptions{
+			api.CreateAndAcquireSessionOptions{
 				CreateSessionOptions:  opt.CreateSessionOptions(req),
 				AcquireSessionOptions: opt.AcquireSessionOptions(req),
 			},
 			// Wrap the handler callback.
-			func(sessionToken SessionToken) error {
-				sessionTokenBytes, err = MarshallSessionToken(sessionToken)
+			func(sessionToken api.SessionToken) error {
+				sessionTokenBytes, err = api.MarshallSessionToken(sessionToken)
 				// It should not happen, but if there is an error, panic.
 				if err != nil {
 					panic(err)
@@ -90,7 +96,7 @@ func (n *Node) HTTPHandle(
 				return handler(w, req, sessionToken)
 			})
 	} else {
-		var offloadedTo *SessionLocation = nil
+		var offloadedTo *api.SessionLocation = nil
 		// Acquire the session.
 		offloadedTo, err = n.AcquireSession(
 			// Use the request context.
@@ -107,8 +113,8 @@ func (n *Node) HTTPHandle(
 		// If the session has been offloaded, redirect the request.
 		if err == nil && offloadedTo != nil {
 			// Set the new session token.
-			sessionTokenBytes, err = MarshallSessionToken(NewSessionToken(*offloadedTo))
-			// It should not happen, but if there is an error, panic.
+			sessionTokenBytes, err = api.MarshallSessionToken(api.NewSessionToken(*offloadedTo))
+			// FIXME: It should not happen, but if there is an error, panic.
 			if err != nil {
 				panic(err)
 			}
@@ -130,6 +136,6 @@ func (n *Node) HTTPHandle(
 
 // Return if the session token belongs to a dummy client that was not able to
 // make the request to the correct node, and the sessionLocation of the correct node.
-func (n *Node) dummyClientNeedsRedirect(ctx context.Context, sessionToken *SessionToken) (bool, SessionLocation) {
+func dummyClientNeedsRedirect(n *api.Node, ctx context.Context, sessionToken *api.SessionToken) (bool, api.SessionLocation) {
 	return sessionToken.Host != n.Host, sessionToken.SessionLocation
 }
