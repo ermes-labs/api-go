@@ -18,13 +18,14 @@ type BestOffloadTargetsCommands interface {
 	BestOffloadTargetNodes(
 		ctx context.Context,
 		sessions map[string]SessionMetadata,
-		opt BestSessionsToOffloadOptions,
+		opt BestOffloadTargetsOptions,
 	) ([][2]string, error)
 	// Return the best sessions to offload. This list is composed by the session
 	// chosen given the local context of the node (direct or indirect knowledge of
 	// the status of the system).
 	BestSessionsToOffload(
 		ctx context.Context,
+		opt BestOffloadTargetsOptions,
 	) (sessions map[string]SessionInfoForOffloadDecision, err error)
 }
 
@@ -36,7 +37,7 @@ type BestOffloadTargetsCommands interface {
 func (n *Node) BestOffloadTargetNodes(
 	ctx context.Context,
 	sessions map[string]SessionMetadata,
-	opt BestSessionsToOffloadOptions,
+	opt BestOffloadTargetsOptions,
 ) ([][2]string, error) {
 	return n.cmd.BestOffloadTargetNodes(ctx, sessions, opt)
 }
@@ -46,6 +47,7 @@ func (n *Node) BestOffloadTargetNodes(
 // the status of the system).
 func (n *Node) BestSessionsToOffload(
 	ctx context.Context,
+	opt BestOffloadTargetsOptions,
 ) (sessions map[string]SessionInfoForOffloadDecision, err error) {
-	return n.cmd.BestSessionsToOffload(ctx)
+	return n.cmd.BestSessionsToOffload(ctx, opt)
 }

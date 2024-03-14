@@ -1,38 +1,38 @@
 package api
 
-// Options to get the best sessions to offload.
-type BestSessionsToOffloadOptions struct {
-	// The maximum number of sessions to return, the system will decide which number
-	// of sessions is best to return, but it will not return more than this number.
-	MaxSessions int
+// Options to get the best targets to offload.
+type BestOffloadTargetsOptions struct {
+	// The maximum number of targets to return, the system will decide which number
+	// of targets is best to return, but it will not return more than this number.
+	MaxTargets int
 }
 
-type BestSessionsToOffloadOptionsBuilder struct {
-	options BestSessionsToOffloadOptions
+type BestOffloadTargetsOptionsBuilder struct {
+	options BestOffloadTargetsOptions
 }
 
-// Create a new BestSessionsToOffloadOptionsBuilder.
-func NewBestSessionsToOffloadOptionsBuilder() *BestSessionsToOffloadOptionsBuilder {
-	return &BestSessionsToOffloadOptionsBuilder{
-		options: DefaultBestSessionsToOffloadOptions(),
+// Create a new BestOffloadTargetsOptionsBuilder.
+func NewBestOffloadTargetsOptionsBuilder() *BestOffloadTargetsOptionsBuilder {
+	return &BestOffloadTargetsOptionsBuilder{
+		options: DefaultBestOffloadTargetsOptions(),
 	}
 }
 
-// Set the maximum number of sessions to return.
-func (builder *BestSessionsToOffloadOptionsBuilder) MaxSessions(maxSessions int) *BestSessionsToOffloadOptionsBuilder {
-	builder.options.MaxSessions = maxSessions
+// Set the maximum number of targets to return.
+func (builder *BestOffloadTargetsOptionsBuilder) MaxTargets(maxSessions int) *BestOffloadTargetsOptionsBuilder {
+	builder.options.MaxTargets = maxSessions
 	return builder
 }
 
-// Build the BestSessionsToOffloadOptions.
-func (builder *BestSessionsToOffloadOptionsBuilder) Build() BestSessionsToOffloadOptions {
+// Build the BestOffloadTargetsOptions.
+func (builder *BestOffloadTargetsOptionsBuilder) Build() BestOffloadTargetsOptions {
 	return builder.options
 }
 
-// DefaultBestSessionsToOffloadOptions returns the default options to get the best
-// sessions to offload.
-func DefaultBestSessionsToOffloadOptions() BestSessionsToOffloadOptions {
-	return BestSessionsToOffloadOptions{
-		MaxSessions: 10,
+// DefaultBestOffloadTargetsOptions returns the default options to get the best
+// targets to offload.
+func DefaultBestOffloadTargetsOptions() BestOffloadTargetsOptions {
+	return BestOffloadTargetsOptions{
+		MaxTargets: 10,
 	}
 }

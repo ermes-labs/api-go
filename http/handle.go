@@ -96,9 +96,9 @@ func Handle(
 				return handler(w, req, sessionToken)
 			})
 	} else {
-		var offloadedTo *api.SessionLocation = nil
+		var newToken *api.SessionToken = nil
 		// Acquire the session.
-		offloadedTo, err = n.AcquireSession(
+		newToken, err = n.AcquireSession(
 			// Use the request context.
 			req.Context(),
 			// Pass the session token.
@@ -111,17 +111,11 @@ func Handle(
 			})
 
 		// If the session has been offloaded, redirect the request.
-		if err == nil && offloadedTo != nil {
-			// Set the new session token.
-			sessionTokenBytes, err = api.MarshallSessionToken(api.NewSessionToken(*offloadedTo))
-			// FIXME: It should not happen, but if there is an error, panic.
-			if err != nil {
-				panic(err)
-			}
+		if err == nil && newToken != nil {
 			// Set the session token in the response.
 			opt.setSessionTokenBytes(w, sessionTokenBytes)
 			// Create the redirect response.
-			opt.redirectResponse(w, req, offloadedTo.Host)
+			opt.redirectResponse(w, req, sessionToken.Host)
 		}
 	}
 

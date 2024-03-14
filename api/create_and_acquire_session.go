@@ -64,7 +64,7 @@ func (n *Node) MaybeCreateAndAcquireSession(
 	sessionToken *SessionToken,
 	opt CreateAndAcquireSessionOptions,
 	ifAcquired func(SessionToken) error,
-) (_ *SessionLocation, err error) {
+) (_ *SessionToken, err error) {
 	// If there is no session token, create and acquire a session.
 	if (*sessionToken == SessionToken{}) {
 		*sessionToken, err = n.CreateAndAcquireSession(ctx, opt, ifAcquired)

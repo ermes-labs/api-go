@@ -15,6 +15,12 @@ func NewSessionToken(sessionLocation SessionLocation) SessionToken {
 	return SessionToken{sessionLocation}
 }
 
+// NewTokenAfterOffloading creates a new session token after offloading.
+func NewSessionTokenAfterOffloading(sessionToken SessionToken, newLocation SessionLocation) SessionToken {
+	sessionToken.SessionLocation = newLocation
+	return sessionToken
+}
+
 // Unmarshall a session token.
 func UnmarshallSessionToken(sessionTokenBytes []byte) (*SessionToken, error) {
 	if len(sessionTokenBytes) == 0 {

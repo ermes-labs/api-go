@@ -32,8 +32,31 @@ type OffloadSessionCommands interface {
 		newLocation SessionLocation,
 		opt OffloadSessionOptions,
 		// TODO: extract into another API.
-		notifyLastVisitedNode func(oldLocation SessionLocation) (bool, error),
+		notifyLastVisitedNode func(ctx context.Context, oldLocation SessionLocation) (clientRedirected bool, err error),
 	) (err error)
+	// Updates the location of an offloaded session, the function returns true if
+	// the client has already been redirected to the new location, while the update
+	// is in progress. If true, this node is no more the last visited one, otherwise
+	// the node is still the last visited one.
+	// errors:
+	// - ErrSessionNotFound: If no session with the given id is found.
+	// - ErrSessionIsNotOffloaded: If the session is not offloaded.
+	UpdateOffloadedSessionLocation(
+		ctx context.Context,
+		id string,
+		newLocation SessionLocation,
+	) (clientRedirected bool, err error)
+	// Returns the offloaded sessions, the function returns the new cursor, the
+	// list of session ids and an error. The cursor is used to paginate the results.
+	// If the cursor is empty, the function returns the first page of results.
+	// errors:
+	// - ErrInvalidCursor: If the cursor is invalid.
+	// - ErrInvalidCount: If the count is invalid.
+	ScanOffloadedSessions(
+		ctx context.Context,
+		cursor uint64,
+		count int64,
+	) (ids []string, newCursor uint64, err error)
 }
 
 // Offloads a session to a new location. The function returns the new location of
@@ -42,8 +65,8 @@ func (n *Node) OffloadSession(
 	ctx context.Context,
 	sessionId string,
 	opt OffloadSessionOptions,
-	onload func(context.Context, SessionMetadata, io.Reader) (SessionLocation, error),
-	notifyLastVisitedNode func(oldLocation SessionLocation) (bool, error),
+	onload func(ctx context.Context, metadata SessionMetadata, reader io.Reader) (SessionLocation, error),
+	notifyLastVisitedNode func(ctx context.Context, oldLocation SessionLocation, newLocation SessionLocation) (bool, error),
 ) (SessionLocation, error) {
 	// Create a new context to cancel the loader if the context is canceled.
 	ctx, cancel := context.WithCancel(ctx)
@@ -100,7 +123,9 @@ func (n *Node) OffloadSession(
 	}
 
 	// Confirm the offload of the session.
-	err = n.cmd.ConfirmSessionOffload(ctx, sessionId, newLocation, opt, notifyLastVisitedNode)
+	err = n.cmd.ConfirmSessionOffload(ctx, sessionId, newLocation, opt, func(ctx context.Context, oldLocation SessionLocation) (bool, error) {
+		return notifyLastVisitedNode(ctx, oldLocation, newLocation)
+	})
 	// If there is an error, return it.
 	if err != nil {
 		// TODO: What to do here?
@@ -108,6 +133,22 @@ func (n *Node) OffloadSession(
 
 	// Return the metadata and the reader.
 	return newLocation, nil
+}
+
+func (n *Node) UpdateOffloadedSessionLocation(
+	ctx context.Context,
+	id string,
+	newLocation SessionLocation,
+) (clientRedirected bool, err error) {
+	return n.cmd.UpdateOffloadedSessionLocation(ctx, id, newLocation)
+}
+
+func (n *Node) ScanOffloadedSessions(
+	ctx context.Context,
+	cursor uint64,
+	count int64,
+) (ids []string, newCursor uint64, err error) {
+	return n.cmd.ScanOffloadedSessions(ctx, cursor, count)
 }
 
 // Wrap the readCloser with a check function.

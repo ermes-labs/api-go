@@ -27,6 +27,17 @@ type AcquireSessionCommands interface {
 		sessionId string,
 		opt AcquireSessionOptions,
 	) (*SessionLocation, error)
+	// Returns the offloadable sessions, the function returns the new cursor, the
+	// list of session ids and an error. The cursor is used to paginate the results.
+	// If the cursor is empty, the function returns the first page of results.
+	// errors:
+	// - ErrInvalidCursor: If the cursor is invalid.
+	// - ErrInvalidCount: If the count is invalid.
+	ScanOffloadableSessions(
+		ctx context.Context,
+		cursor uint64,
+		count int64,
+	) (ids []string, newCursor uint64, err error)
 }
 
 // Acquire a session, then run the ifAcquired callback. Inside the callback is
@@ -45,7 +56,7 @@ func (n *Node) AcquireSession(
 	sessionToken SessionToken,
 	opt AcquireSessionOptions,
 	ifAcquired func() error,
-) (*SessionLocation, error) {
+) (*SessionToken, error) {
 	offloadedTo, err := n.cmd.AcquireSession(ctx, sessionToken.SessionId, opt)
 
 	// If there is an error, return it.
@@ -53,16 +64,25 @@ func (n *Node) AcquireSession(
 		return nil, err
 	}
 
-	// If the session has been offloaded, return the sessionLocation of the session.
-	if offloadedTo != nil {
-		return offloadedTo, nil
-	}
-
 	// Defer the release of the session metadata.
 	defer func() {
 		n.cmd.ReleaseSession(ctx, sessionToken.SessionId, opt)
 	}()
 
+	// If the session has been offloaded, return the sessionLocation of the session.
+	if offloadedTo != nil {
+		newToken := NewSessionTokenAfterOffloading(sessionToken, *offloadedTo)
+		return &newToken, nil
+	}
+
 	// Run the ifAcquired callback and return its return value.
 	return nil, ifAcquired()
+}
+
+func (n *Node) ScanOffloadableSessions(
+	ctx context.Context,
+	cursor uint64,
+	count int64,
+) (ids []string, newCursor uint64, err error) {
+	return n.cmd.ScanOffloadableSessions(ctx, cursor, count)
 }
