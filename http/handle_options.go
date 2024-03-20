@@ -11,6 +11,8 @@ type HandlerOptions struct {
 	AcquireSessionOptions              func(req *http.Request) api.AcquireSessionOptions
 	CreateSessionOptions               func(req *http.Request) api.CreateSessionOptions
 	getSessionTokenBytes               func(req *http.Request) []byte
+	redirectNewRequest                 func(req *http.Request) bool
+	redirectTarget                     func(req *http.Request, node *api.Node) string
 	setSessionTokenBytes               func(w http.ResponseWriter, sessionTokenBytes []byte)
 	redirectResponse                   func(w http.ResponseWriter, req *http.Request, host string)
 	malformedSessionTokenErrorResponse func(w http.ResponseWriter, err error)
@@ -44,6 +46,18 @@ func (builder *HandlerOptionsBuilder) CreateSessionOptions(CreateSessionOptions 
 // Set the getSessionTokenBytes function.
 func (builder *HandlerOptionsBuilder) GetSessionTokenBytes(getSessionTokenBytes func(req *http.Request) []byte) *HandlerOptionsBuilder {
 	builder.options.getSessionTokenBytes = getSessionTokenBytes
+	return builder
+}
+
+// Set the redirectNewRequest function.
+func (builder *HandlerOptionsBuilder) RedirectNewRequest(redirectNewRequest func(req *http.Request) bool) *HandlerOptionsBuilder {
+	builder.options.redirectNewRequest = redirectNewRequest
+	return builder
+}
+
+// Set the redirectTarget function.
+func (builder *HandlerOptionsBuilder) RedirectTarget(redirectTarget func(req *http.Request, node *api.Node) string) *HandlerOptionsBuilder {
+	builder.options.redirectTarget = redirectTarget
 	return builder
 }
 
@@ -101,6 +115,20 @@ func DefaultHandlerOptions() HandlerOptions {
 		},
 		getSessionTokenBytes: func(req *http.Request) []byte {
 			return GetSessionTokenBytesFromHeader(req, DefaultTokenHeaderName)
+		},
+		redirectNewRequest: func(_ *http.Request) bool {
+			// By default, do not redirect new requests.
+			return false
+		},
+		redirectTarget: func(req *http.Request, node *api.Node) string {
+			// By default, redirect to the node host.
+			parent, err := node.GetParentNodeOf(req.Context(), node.Host)
+
+			if err != nil {
+				panic(err)
+			}
+
+			return parent.Host
 		},
 		setSessionTokenBytes: func(w http.ResponseWriter, sessionTokenBytes []byte) {
 			SetSessionTokenBytesToHeader(w, sessionTokenBytes, DefaultTokenHeaderName)

@@ -64,9 +64,11 @@ func Handle(
 	// If the client does not already have a session.
 	if sessionToken == nil {
 		// If the node must redirect new requests, redirect the request.
-		if redirect, destination := n.RedirectNewRequests(req.Context()); redirect {
+		if opt.redirectNewRequest(req) {
+			// Get the host to redirect the request to.
+			host := opt.redirectTarget(req, n)
 			// Create the redirect response.
-			opt.redirectResponse(w, req, destination)
+			opt.redirectResponse(w, req, host)
 			// Return.
 			return
 		}
