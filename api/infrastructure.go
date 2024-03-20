@@ -16,11 +16,21 @@ type ResourcesUsageCommands interface {
 		ctx context.Context,
 		infrastructure infrastructure.Infrastructure,
 	) (err error)
+	// Get the parent node of a node.
+	GetParentNodeOf(
+		ctx context.Context,
+		nodeId string,
+	) (*infrastructure.Node, error)
+	// Get the children nodes of a node.
+	GetChildrenNodesOf(
+		ctx context.Context,
+		nodeId string,
+	) ([]infrastructure.Node, error)
 	// Get the lookup node for a session offloading.
 	FindLookupNode(
 		ctx context.Context,
 		sessionId string,
-	) (nodeId string, err error)
+	) (node infrastructure.Node, err error)
 	// Get the resources usage of a session.
 	// errors:
 	// - ErrSessionNotFound: If no session with the given id is found.
@@ -52,10 +62,6 @@ type ResourcesUsageCommands interface {
 		sessions uint,
 		resourcesUsageNodesMap map[string]ResourcesUsage,
 	) (err error)
-	// Redirect new requests to the best offload target.
-	RedirectNewRequests(
-		ctx context.Context,
-	) (redirect bool, host string)
 }
 
 // load the infrastructure.
@@ -66,11 +72,27 @@ func (n *Node) LoadInfrastructure(
 	return n.cmd.LoadInfrastructure(ctx, infrastructure)
 }
 
+// Get the parent node of a node.
+func (n *Node) GetParentNodeOf(
+	ctx context.Context,
+	nodeId string,
+) (*infrastructure.Node, error) {
+	return n.cmd.GetParentNodeOf(ctx, nodeId)
+}
+
+// Get the children nodes of a node.
+func (n *Node) GetChildrenNodesOf(
+	ctx context.Context,
+	nodeId string,
+) ([]infrastructure.Node, error) {
+	return n.cmd.GetChildrenNodesOf(ctx, nodeId)
+}
+
 // Get the lookup node for a session offloading.
 func (n *Node) FindLookupNode(
 	ctx context.Context,
 	sessionId string,
-) (nodeId string, err error) {
+) (node infrastructure.Node, err error) {
 	return n.cmd.FindLookupNode(ctx, sessionId)
 }
 
@@ -138,11 +160,4 @@ func (n *Node) ResourcesUsageUpdateFromChild(
 	resourcesUsageNodesMap map[string]ResourcesUsage,
 ) (err error) {
 	return n.cmd.ResourcesUsageUpdateFromChild(ctx, sessions, resourcesUsageNodesMap)
-}
-
-// Redirect new requests to the best offload target.
-func (n *Node) RedirectNewRequests(
-	ctx context.Context,
-) (redirect bool, host string) {
-	return n.cmd.RedirectNewRequests(ctx)
 }
