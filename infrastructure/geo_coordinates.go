@@ -34,7 +34,7 @@ func CheckGeoCoordinates(coordinates GeoCoordinates) error {
 }
 
 // UnmarshalGeoCoordinates unmarshals the GeoCoordinates.
-func UnmarshalGeoCoordinates(data []byte) (GeoCoordinates, error) {
+func UnmarshalGeoCoordinates(data []byte) (*GeoCoordinates, error) {
 	var r GeoCoordinates
 	err := json.Unmarshal(data, &r)
 
@@ -42,7 +42,7 @@ func UnmarshalGeoCoordinates(data []byte) (GeoCoordinates, error) {
 		err = CheckGeoCoordinates(r)
 	}
 
-	return r, err
+	return &r, err
 }
 
 // MarshallGeoCoordinates marshalls the GeoCoordinates.

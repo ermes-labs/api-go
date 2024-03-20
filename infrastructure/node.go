@@ -18,6 +18,8 @@ type Node struct {
 	GeoCoordinates GeoCoordinates `json:"geoCoordinates,omitempty"`
 	// The resources of the node.
 	Resources Resources `json:"resources,omitempty"`
+	// The tags of the node.
+	Tags map[string]string `json:"tags,omitempty"`
 }
 
 // NewNode creates a new node.
@@ -64,7 +66,7 @@ func CheckNode(node Node) error {
 }
 
 // UnmarshalNode unmarshals the node.
-func UnmarshalNode(data []byte) (Node, error) {
+func UnmarshalNode(data []byte) (*Node, error) {
 	var r Node
 	err := json.Unmarshal(data, &r)
 
@@ -72,7 +74,7 @@ func UnmarshalNode(data []byte) (Node, error) {
 		err = CheckNode(r)
 	}
 
-	return r, err
+	return &r, err
 }
 
 // MarshalNode marshals the node.

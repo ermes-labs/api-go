@@ -14,18 +14,33 @@ type Area struct {
 	Areas []Area `json:"areas,omitempty"`
 }
 
+// Returns the flatten list of areas.
+func (a *Area) Flatten() []*Area {
+	// Append this to the areas returned by the sub-areas.
+	areas := []*Area{a}
+
+	// Append the sub-areas.
+	for _, subArea := range a.Areas {
+		areas = append(areas, subArea.Flatten()...)
+	}
+
+	return areas
+}
+
 // NewArea creates a new Area.
-func NewArea(node Node, areas []Area) (*Area, error) {
+func NewArea(node Node, areas []Area) (*Area, map[string]*Area, error) {
 	area := &Area{
 		Node:  node,
 		Areas: areas,
 	}
 
-	return area, CheckArea(*area, math.Inf(1), make(map[string]bool), make(map[string]bool))
+	areasMap := make(map[string]*Area)
+
+	return area, areasMap, CheckArea(*area, math.Inf(1), areasMap, make(map[string]bool))
 }
 
 // CheckArea checks the Area.
-func CheckArea(area Area, maxDepth float64, nameMap map[string]bool, hostMap map[string]bool) error {
+func CheckArea(area Area, maxDepth float64, areasMap map[string]*Area, hostsMap map[string]bool) error {
 	// Check the node.
 	if err := CheckNode(area.Node); err != nil {
 		return err
@@ -37,24 +52,24 @@ func CheckArea(area Area, maxDepth float64, nameMap map[string]bool, hostMap map
 	}
 
 	// Checks that the name is unique.
-	if nameMap[area.AreaName] {
+	if _, ok := areasMap[area.AreaName]; ok {
 		return fmt.Errorf("%w: %s", ErrAreaNodeNameUnique, area.AreaName)
 	} else {
 		// Adds the name to the map.
-		nameMap[area.AreaName] = true
+		areasMap[area.AreaName] = &area
 	}
 
 	// Checks that the host is unique.
-	if hostMap[area.Host] {
+	if _, ok := hostsMap[area.Host]; ok {
 		return fmt.Errorf("%w: %s", ErrHostUnique, area.Host)
 	} else {
 		// Adds the host to the map.
-		hostMap[area.Host] = true
+		hostsMap[area.Host] = true
 	}
 
 	// Checks that the sub-areas are valid.
 	for _, subArea := range area.Areas {
-		if err := CheckArea(subArea, maxDepth-1, nameMap, hostMap); err != nil {
+		if err := CheckArea(subArea, maxDepth-1, areasMap, hostsMap); err != nil {
 			return err
 		}
 	}
@@ -63,20 +78,20 @@ func CheckArea(area Area, maxDepth float64, nameMap map[string]bool, hostMap map
 }
 
 // UnmarshalArea unmarshals the Area.
-func UnmarshalArea(data []byte) (Area, error) {
+func UnmarshalArea(data []byte) (*Area, error) {
 	var r Area
 	err := json.Unmarshal(data, &r)
 
 	if err == nil {
-		err = CheckArea(r, math.Inf(1), make(map[string]bool), make(map[string]bool))
+		err = CheckArea(r, math.Inf(1), make(map[string]*Area), make(map[string]bool))
 	}
 
-	return r, err
+	return &r, err
 }
 
 // MarshalArea marshals the Area.
 func MarshalArea(area Area) ([]byte, error) {
-	err := CheckArea(area, math.Inf(1), make(map[string]bool), make(map[string]bool))
+	err := CheckArea(area, math.Inf(1), make(map[string]*Area), make(map[string]bool))
 
 	if err != nil {
 		return nil, err

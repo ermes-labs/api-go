@@ -14,21 +14,34 @@ type Infrastructure struct {
 	Areas []Area `json:"areas"`
 }
 
+// Returns the flatten list of areas.
+func (i *Infrastructure) Flatten() []*Area {
+	// Append the sub-areas.
+	areas := make([]*Area, 0, len(i.Areas))
+	for _, subArea := range i.Areas {
+		areas = append(areas, subArea.Flatten()...)
+	}
+
+	return areas
+}
+
 // NewInfrastructure creates a new Infrastructure.
-func NewInfrastructure(areaIdentifiers []string, areas []Area) (*Infrastructure, error) {
+func NewInfrastructure(areaIdentifiers []string, areas []Area) (*Infrastructure, map[string]*Area, error) {
 	infrastructure := &Infrastructure{
 		AreaIdentifiers: areaIdentifiers,
 		Areas:           areas,
 	}
 
-	return infrastructure, CheckInfrastructure(*infrastructure)
+	areasMap, err := CheckInfrastructure(*infrastructure)
+
+	return infrastructure, areasMap, err
 }
 
 // CheckInfrastructure checks the Infrastructure.
-func CheckInfrastructure(infrastructure Infrastructure) error {
+func CheckInfrastructure(infrastructure Infrastructure) (map[string]*Area, error) {
 	// Checks that the area identifiers are not empty.
 	if len(infrastructure.AreaIdentifiers) == 0 {
-		return ErrInfrastructureAreaIdentifiersEmpty
+		return nil, ErrInfrastructureAreaIdentifiersEmpty
 	}
 
 	// Checks that all the identifiers are unique and not empty.
@@ -36,46 +49,50 @@ func CheckInfrastructure(infrastructure Infrastructure) error {
 	for _, identifier := range infrastructure.AreaIdentifiers {
 		// Checks that the identifier is not empty.
 		if identifier == "" {
-			return ErrInfrastructureAreaIdentifierEmpty
+			return nil, ErrInfrastructureAreaIdentifierEmpty
 		}
 
 		// Checks that the identifier is not duplicated.
 		if _, ok := identifiers[identifier]; ok {
-			return fmt.Errorf("%w: %s", ErrInfrastructureAreaIdentifiersUnique, identifier)
+			return nil, fmt.Errorf("%w: %s", ErrInfrastructureAreaIdentifiersUnique, identifier)
 		}
 
 		// Adds the identifier to the map.
 		identifiers[identifier] = true
 	}
 
-	nameMap := make(map[string]bool)
-	hostMap := make(map[string]bool)
+	areasMap := make(map[string]*Area)
+	hostsMap := make(map[string]bool)
 	maxDepth := float64(len((infrastructure.AreaIdentifiers)))
 	// Checks that all the areas are valid.
 	for _, area := range infrastructure.Areas {
-		if err := CheckArea(area, maxDepth, nameMap, hostMap); err != nil {
-			return err
+		if err := CheckArea(area, maxDepth, areasMap, hostsMap); err != nil {
+			return nil, err
 		}
 	}
 
-	return nil
+	return areasMap, nil
 }
 
 // UnmarshalInfrastructure unmarshals the Infrastructure.
-func UnmarshalInfrastructure(data []byte) (Infrastructure, error) {
+func UnmarshalInfrastructure(data []byte) (*Infrastructure, map[string]*Area, error) {
 	var r Infrastructure
 	err := json.Unmarshal(data, &r)
 
 	if err == nil {
-		err = CheckInfrastructure(r)
+		areasMap, err := CheckInfrastructure(r)
+
+		if err == nil {
+			return &r, areasMap, nil
+		}
 	}
 
-	return r, err
+	return &r, nil, err
 }
 
 // MarshalInfrastructure marshals the Infrastructure.
 func MarshalInfrastructure(infrastructure Infrastructure) ([]byte, error) {
-	if err := CheckInfrastructure(infrastructure); err != nil {
+	if _, err := CheckInfrastructure(infrastructure); err != nil {
 		return nil, err
 	}
 

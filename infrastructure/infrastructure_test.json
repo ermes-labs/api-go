@@ -1,0 +1,145 @@
+{
+  "areaIdentifiers": [
+    "continents",
+    "states",
+    "cities"
+  ],
+  "areas": [
+    {
+      "areaName": "",
+      "host": "",
+      "geoCoordinates": {
+        "latitude": 0,
+        "longitude": 0
+      },
+      "tags": {
+        "tag": ""
+      },
+      "resources": {
+        "resource": ""
+      },
+      "areas": [
+        {
+          "areaName": "",
+          "host": "",
+          "geoCoordinates": {
+            "latitude": 0,
+            "longitude": 0
+          },
+          "tags": {
+            "tag": ""
+          },
+          "resources": {
+            "resource": ""
+          }
+        },
+        {
+          "areaName": "",
+          "host": "",
+          "geoCoordinates": {
+            "latitude": 0,
+            "longitude": 0
+          },
+          "tags": {
+            "tag": ""
+          },
+          "resources": {
+            "resource": ""
+          }
+        }
+      ]
+    },
+    {
+      "areaName": "",
+      "host": "",
+      "geoCoordinates": {
+        "latitude": 0,
+        "longitude": 0
+      },
+      "tags": {
+        "tag": ""
+      },
+      "resources": {
+        "resource": ""
+      },
+      "areas": [
+        {
+          "areaName": "",
+          "host": "",
+          "geoCoordinates": {
+            "latitude": 0,
+            "longitude": 0
+          },
+          "tags": {
+            "tag": ""
+          },
+          "resources": {
+            "resource": ""
+          },
+          "areas": [
+            {
+              "areaName": "",
+              "host": "",
+              "geoCoordinates": {
+                "latitude": 0,
+                "longitude": 0
+              },
+              "tags": {
+                "tag": ""
+              },
+              "resources": {
+                "resource": ""
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "areaName": "",
+      "host": "",
+      "geoCoordinates": {
+        "latitude": 0,
+        "longitude": 0
+      },
+      "tags": {
+        "tag": ""
+      },
+      "resources": {
+        "resource": ""
+      },
+      "areas": [
+        {
+          "areaName": "",
+          "host": "",
+          "geoCoordinates": {
+            "latitude": 0,
+            "longitude": 0
+          },
+          "tags": {
+            "tag": ""
+          },
+          "resources": {
+            "resource": ""
+          },
+          "areas": [
+            {
+              "areaName": "",
+              "host": "",
+              "geoCoordinates": {
+                "latitude": 0,
+                "longitude": 0
+              },
+              "tags": {
+                "tag": ""
+              },
+              "resources": {
+                "resource": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
