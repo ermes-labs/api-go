@@ -22,6 +22,13 @@ type Node struct {
 	Tags map[string]string `json:"tags,omitempty"`
 }
 
+// String returns the string representation of the Node.
+func (n *Node) String() string {
+	// Return the json string representation.
+	data, _ := json.Marshal(n)
+	return string(data)
+}
+
 // NewNode creates a new node.
 func NewNode(areaName string, host string, geoCoordinates GeoCoordinates) (*Node, error) {
 	node := &Node{

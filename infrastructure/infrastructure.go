@@ -25,6 +25,13 @@ func (i *Infrastructure) Flatten() []*Area {
 	return areas
 }
 
+// String returns the string representation of the Infrastructure.
+func (i *Infrastructure) String() string {
+	// Return the json string representation.
+	data, _ := json.Marshal(i)
+	return string(data)
+}
+
 // NewInfrastructure creates a new Infrastructure.
 func NewInfrastructure(areaIdentifiers []string, areas []Area) (*Infrastructure, map[string]*Area, error) {
 	infrastructure := &Infrastructure{
