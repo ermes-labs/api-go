@@ -64,7 +64,7 @@ func Handle(
 	// If the client does not already have a session.
 	if sessionToken == nil {
 		// If the node must redirect new requests, redirect the request.
-		if opt.redirectNewRequest(req) {
+		if opt.redirectNewRequest(req, n) {
 			// Get the host to redirect the request to.
 			host := opt.redirectTarget(req, n)
 			// Create the redirect response.
@@ -82,8 +82,8 @@ func Handle(
 			req.Context(),
 			// Create the options.
 			api.CreateAndAcquireSessionOptions{
-				CreateSessionOptions:  opt.CreateSessionOptions(req),
-				AcquireSessionOptions: opt.AcquireSessionOptions(req),
+				CreateSessionOptions:  opt.getCreateSessionOptions(req),
+				AcquireSessionOptions: opt.getAcquireSessionOptions(req),
 			},
 			// Wrap the handler callback.
 			func(sessionToken api.SessionToken) error {
@@ -106,7 +106,7 @@ func Handle(
 			// Pass the session token.
 			*sessionToken,
 			// Create the options.
-			opt.AcquireSessionOptions(req),
+			opt.getAcquireSessionOptions(req),
 			// Wrap the handler callback.
 			func() error {
 				return handler(w, req, *sessionToken)
