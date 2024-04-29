@@ -57,7 +57,7 @@ func (n *Node) AcquireSession(
 	opt AcquireSessionOptions,
 	ifAcquired func() error,
 ) (*SessionToken, error) {
-	offloadedTo, err := n.cmd.AcquireSession(ctx, sessionToken.SessionId, opt)
+	offloadedTo, err := n.Cmd.AcquireSession(ctx, sessionToken.SessionId, opt)
 
 	// If there is an error, return it.
 	if err != nil {
@@ -66,7 +66,7 @@ func (n *Node) AcquireSession(
 
 	// Defer the release of the session metadata.
 	defer func() {
-		n.cmd.ReleaseSession(ctx, sessionToken.SessionId, opt)
+		n.Cmd.ReleaseSession(ctx, sessionToken.SessionId, opt)
 	}()
 
 	// If the session has been offloaded, return the sessionLocation of the session.
@@ -84,5 +84,5 @@ func (n *Node) ScanOffloadableSessions(
 	cursor uint64,
 	count int64,
 ) (ids []string, newCursor uint64, err error) {
-	return n.cmd.ScanOffloadableSessions(ctx, cursor, count)
+	return n.Cmd.ScanOffloadableSessions(ctx, cursor, count)
 }

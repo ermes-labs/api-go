@@ -1,15 +1,11 @@
 package api
 
-import (
-	"github.com/ermes-labs/api-go/infrastructure"
-)
-
 // Options for the offloadSession.
 type OffloadSessionOptions struct {
 	// The id of the session to offload.
 	sessionId string
 	// The sessionLocation to offload the session to.
-	toLocation infrastructure.SessionLocation
+	toLocation SessionLocation
 }
 
 // Builder for OffloadSessionOptions.
@@ -31,7 +27,7 @@ func (builder *OffloadSessionOptionsBuilder) SessionId(sessionId string) *Offloa
 }
 
 // Set the toLocation.
-func (builder *OffloadSessionOptionsBuilder) ToLocation(toLocation infrastructure.SessionLocation) *OffloadSessionOptionsBuilder {
+func (builder *OffloadSessionOptionsBuilder) ToLocation(toLocation SessionLocation) *OffloadSessionOptionsBuilder {
 	builder.options.toLocation = toLocation
 	return builder
 }

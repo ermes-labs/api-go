@@ -3,8 +3,15 @@ package api
 import "github.com/ermes-labs/api-go/infrastructure"
 
 type Node struct {
-	cmd Commands
+	Cmd Commands
 	infrastructure.Node
+}
+
+func NewNode(node infrastructure.Node, cmd Commands) *Node {
+	return &Node{
+		Cmd:  cmd,
+		Node: node,
+	}
 }
 
 type Commands interface {

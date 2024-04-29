@@ -26,11 +26,6 @@ type ResourcesUsageCommands interface {
 		ctx context.Context,
 		nodeId string,
 	) ([]infrastructure.Node, error)
-	// Get the lookup node for a session offloading.
-	FindLookupNode(
-		ctx context.Context,
-		sessionId string,
-	) (node infrastructure.Node, err error)
 	// Get the resources usage of a session.
 	// errors:
 	// - ErrSessionNotFound: If no session with the given id is found.
@@ -55,7 +50,7 @@ type ResourcesUsageCommands interface {
 	// Get the update to send to the parent node.
 	ResourcesUsageUpdateToParent(
 		ctx context.Context,
-	) (host string, sessions uint, resourcesUsageNodesMap map[string]ResourcesUsage, err error)
+	) (node infrastructure.Node, sessions uint, resourcesUsageNodesMap map[string]ResourcesUsage, err error)
 	// Get the update from the child nodes.
 	ResourcesUsageUpdateFromChild(
 		ctx context.Context,
@@ -69,7 +64,7 @@ func (n *Node) LoadInfrastructure(
 	ctx context.Context,
 	infrastructure infrastructure.Infrastructure,
 ) (err error) {
-	return n.cmd.LoadInfrastructure(ctx, infrastructure)
+	return n.Cmd.LoadInfrastructure(ctx, infrastructure)
 }
 
 // Get the parent node of a node.
@@ -77,7 +72,7 @@ func (n *Node) GetParentNodeOf(
 	ctx context.Context,
 	nodeId string,
 ) (*infrastructure.Node, error) {
-	return n.cmd.GetParentNodeOf(ctx, nodeId)
+	return n.Cmd.GetParentNodeOf(ctx, nodeId)
 }
 
 // Get the children nodes of a node.
@@ -85,15 +80,7 @@ func (n *Node) GetChildrenNodesOf(
 	ctx context.Context,
 	nodeId string,
 ) ([]infrastructure.Node, error) {
-	return n.cmd.GetChildrenNodesOf(ctx, nodeId)
-}
-
-// Get the lookup node for a session offloading.
-func (n *Node) FindLookupNode(
-	ctx context.Context,
-	sessionId string,
-) (node infrastructure.Node, err error) {
-	return n.cmd.FindLookupNode(ctx, sessionId)
+	return n.Cmd.GetChildrenNodesOf(ctx, nodeId)
 }
 
 // Get the resources usage of a session.
@@ -103,7 +90,7 @@ func (n *Node) GetSessionResourcesUsage(
 	ctx context.Context,
 	sessionId string,
 ) (resourcesUsage ResourcesUsage, err error) {
-	return n.cmd.GetSessionResourcesUsage(ctx, sessionId)
+	return n.Cmd.GetSessionResourcesUsage(ctx, sessionId)
 }
 
 // Get the resources usage of a node.
@@ -111,7 +98,7 @@ func (n *Node) GetNodeResourcesUsage(
 	ctx context.Context,
 	nodeId string,
 ) (sessions uint, resourcesUsage ResourcesUsage, err error) {
-	return n.cmd.GetNodeResourcesUsage(ctx, nodeId)
+	return n.Cmd.GetNodeResourcesUsage(ctx, nodeId)
 }
 
 // Get the resources usage of all the nodes.
@@ -119,7 +106,7 @@ func (n *Node) GetNodeResourcesUsageIndex(
 	ctx context.Context,
 	nodeId string,
 ) (resourcesUsageIndex ResourcesUsageIndex, err error) {
-	_, resourcesUsage, err := n.cmd.GetNodeResourcesUsage(ctx, nodeId)
+	_, resourcesUsage, err := n.Cmd.GetNodeResourcesUsage(ctx, nodeId)
 
 	if err != nil {
 		return nil, err
@@ -143,14 +130,14 @@ func (n *Node) UpdateSessionResourcesUsage(
 	sessionId string,
 	resourcesUsage ResourcesUsage,
 ) (err error) {
-	return n.cmd.UpdateSessionResourcesUsage(ctx, sessionId, resourcesUsage)
+	return n.Cmd.UpdateSessionResourcesUsage(ctx, sessionId, resourcesUsage)
 }
 
 // Get the update to send to the parent node.
 func (n *Node) ResourcesUsageUpdateToParent(
 	ctx context.Context,
-) (host string, sessions uint, resourcesUsageNodesMap map[string]ResourcesUsage, err error) {
-	return n.cmd.ResourcesUsageUpdateToParent(ctx)
+) (node infrastructure.Node, sessions uint, resourcesUsageNodesMap map[string]ResourcesUsage, err error) {
+	return n.Cmd.ResourcesUsageUpdateToParent(ctx)
 }
 
 // Get the update from the child nodes.
@@ -159,5 +146,5 @@ func (n *Node) ResourcesUsageUpdateFromChild(
 	sessions uint,
 	resourcesUsageNodesMap map[string]ResourcesUsage,
 ) (err error) {
-	return n.cmd.ResourcesUsageUpdateFromChild(ctx, sessions, resourcesUsageNodesMap)
+	return n.Cmd.ResourcesUsageUpdateFromChild(ctx, sessions, resourcesUsageNodesMap)
 }
