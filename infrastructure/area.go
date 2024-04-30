@@ -27,6 +27,13 @@ func (a *Area) Flatten() []*Area {
 	return areas
 }
 
+// String returns the string representation of the Area.
+func (a *Area) String() string {
+	// Return the json string representation.
+	data, _ := json.Marshal(a)
+	return string(data)
+}
+
 // NewArea creates a new Area.
 func NewArea(node Node, areas []Area) (*Area, map[string]*Area, error) {
 	area := &Area{

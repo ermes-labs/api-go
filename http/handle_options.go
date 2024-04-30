@@ -8,10 +8,10 @@ import (
 
 // Options for the handler.
 type HandlerOptions struct {
-	AcquireSessionOptions              func(req *http.Request) api.AcquireSessionOptions
-	CreateSessionOptions               func(req *http.Request) api.CreateSessionOptions
+	getAcquireSessionOptions           func(req *http.Request) api.AcquireSessionOptions
+	getCreateSessionOptions            func(req *http.Request) api.CreateSessionOptions
 	getSessionTokenBytes               func(req *http.Request) []byte
-	redirectNewRequest                 func(req *http.Request) bool
+	redirectNewRequest                 func(req *http.Request, node *api.Node) bool
 	redirectTarget                     func(req *http.Request, node *api.Node) string
 	setSessionTokenBytes               func(w http.ResponseWriter, sessionTokenBytes []byte)
 	redirectResponse                   func(w http.ResponseWriter, req *http.Request, host string)
@@ -31,15 +31,31 @@ func NewHandlerOptionsBuilder() *HandlerOptionsBuilder {
 	}
 }
 
+// Set the GetAcquireSessionOptions function.
+func (builder *HandlerOptionsBuilder) GetAcquireSessionOptionsFunc(GetAcquireSessionOptions func(req *http.Request) api.AcquireSessionOptions) *HandlerOptionsBuilder {
+	builder.options.getAcquireSessionOptions = GetAcquireSessionOptions
+	return builder
+}
+
 // Set the AcquireSessionOptions function.
-func (builder *HandlerOptionsBuilder) AcquireSessionOptions(AcquireSessionOptions func(req *http.Request) api.AcquireSessionOptions) *HandlerOptionsBuilder {
-	builder.options.AcquireSessionOptions = AcquireSessionOptions
+func (builder *HandlerOptionsBuilder) AcquireSessionOptions(acquireSessionOptions api.AcquireSessionOptions) *HandlerOptionsBuilder {
+	builder.options.getAcquireSessionOptions = func(req *http.Request) api.AcquireSessionOptions {
+		return acquireSessionOptions
+	}
 	return builder
 }
 
 // Set the CreateSessionOptions function.
-func (builder *HandlerOptionsBuilder) CreateSessionOptions(CreateSessionOptions func(req *http.Request) api.CreateSessionOptions) *HandlerOptionsBuilder {
-	builder.options.CreateSessionOptions = CreateSessionOptions
+func (builder *HandlerOptionsBuilder) GetCreateSessionOptionsFunc(CreateSessionOptions func(req *http.Request) api.CreateSessionOptions) *HandlerOptionsBuilder {
+	builder.options.getCreateSessionOptions = CreateSessionOptions
+	return builder
+}
+
+// Set the CreateSessionOptions function.
+func (builder *HandlerOptionsBuilder) CreateSessionOptions(createSessionOptions api.CreateSessionOptions) *HandlerOptionsBuilder {
+	builder.options.getCreateSessionOptions = func(req *http.Request) api.CreateSessionOptions {
+		return createSessionOptions
+	}
 	return builder
 }
 
@@ -50,7 +66,7 @@ func (builder *HandlerOptionsBuilder) GetSessionTokenBytes(getSessionTokenBytes 
 }
 
 // Set the redirectNewRequest function.
-func (builder *HandlerOptionsBuilder) RedirectNewRequest(redirectNewRequest func(req *http.Request) bool) *HandlerOptionsBuilder {
+func (builder *HandlerOptionsBuilder) RedirectNewRequest(redirectNewRequest func(req *http.Request, node *api.Node) bool) *HandlerOptionsBuilder {
 	builder.options.redirectNewRequest = redirectNewRequest
 	return builder
 }
@@ -105,18 +121,18 @@ func (builder *HandlerOptionsBuilder) Build() HandlerOptions {
 // DefaultHandlerOptions returns the default options for the handler.
 func DefaultHandlerOptions() HandlerOptions {
 	return HandlerOptions{
-		AcquireSessionOptions: func(_ *http.Request) api.AcquireSessionOptions {
+		getAcquireSessionOptions: func(_ *http.Request) api.AcquireSessionOptions {
 			// Return the default options to acquire a session.
 			return api.DefaultAcquireSessionOptions()
 		},
-		CreateSessionOptions: func(_ *http.Request) api.CreateSessionOptions {
+		getCreateSessionOptions: func(_ *http.Request) api.CreateSessionOptions {
 			// Return the default options to create a session.
 			return api.DefaultCreateSessionOptions()
 		},
 		getSessionTokenBytes: func(req *http.Request) []byte {
 			return GetSessionTokenBytesFromHeader(req, DefaultTokenHeaderName)
 		},
-		redirectNewRequest: func(_ *http.Request) bool {
+		redirectNewRequest: func(_ *http.Request, _ *api.Node) bool {
 			// By default, do not redirect new requests.
 			return false
 		},

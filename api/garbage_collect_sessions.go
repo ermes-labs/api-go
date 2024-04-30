@@ -29,7 +29,7 @@ func (n *Node) GarbageCollectSessions(
 	// Garbage collect sessions.
 	for {
 		// Garbage collect sessions.
-		cursor, err := n.cmd.GarbageCollectSessions(ctx, opt, cursor)
+		cursor, err := n.Cmd.GarbageCollectSessions(ctx, opt, cursor)
 
 		// If there is an error, return it.
 		if err != nil {

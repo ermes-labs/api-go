@@ -26,7 +26,7 @@ func (n *Node) CreateAndAcquireSession(
 	ifCreatedAndAcquired func(sessionToken SessionToken) error,
 ) (SessionToken, error) {
 	// Create and acquire the session.
-	sessionId, err := n.cmd.CreateAndAcquireSession(ctx, opt)
+	sessionId, err := n.Cmd.CreateAndAcquireSession(ctx, opt)
 
 	// If there is an error, return it.
 	if err != nil {
@@ -35,7 +35,7 @@ func (n *Node) CreateAndAcquireSession(
 
 	// Defer the release of the session.
 	defer func() {
-		n.cmd.ReleaseSession(ctx, sessionId, opt.AcquireSessionOptions)
+		n.Cmd.ReleaseSession(ctx, sessionId, opt.AcquireSessionOptions)
 	}()
 
 	// Create a new session token.

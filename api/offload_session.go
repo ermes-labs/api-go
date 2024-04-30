@@ -66,13 +66,13 @@ func (n *Node) OffloadSession(
 	sessionId string,
 	opt OffloadSessionOptions,
 	onload func(ctx context.Context, metadata SessionMetadata, reader io.Reader) (SessionLocation, error),
-	notifyLastVisitedNode func(ctx context.Context, oldLocation SessionLocation, newLocation SessionLocation) (bool, error),
+	notifyLastVisitedNode func(ctx context.Context, lastVisitedLocation SessionLocation, newLocation SessionLocation) (bool, error),
 ) (SessionLocation, error) {
 	// Create a new context to cancel the loader if the context is canceled.
 	ctx, cancel := context.WithCancel(ctx)
 
 	// Read the metadata of the session.
-	metadata, err := n.cmd.GetSessionMetadata(ctx, sessionId)
+	metadata, err := n.Cmd.GetSessionMetadata(ctx, sessionId)
 	// If there is an error, return it.
 	if err != nil {
 		cancel()
@@ -80,7 +80,7 @@ func (n *Node) OffloadSession(
 	}
 
 	// Start the offload of the session.
-	reader, loader, err := n.cmd.OffloadSession(ctx, sessionId, opt)
+	reader, loader, err := n.Cmd.OffloadSession(ctx, sessionId, opt)
 	// If there is an error, return it.
 	if err != nil {
 		cancel()
@@ -123,8 +123,8 @@ func (n *Node) OffloadSession(
 	}
 
 	// Confirm the offload of the session.
-	err = n.cmd.ConfirmSessionOffload(ctx, sessionId, newLocation, opt, func(ctx context.Context, oldLocation SessionLocation) (bool, error) {
-		return notifyLastVisitedNode(ctx, oldLocation, newLocation)
+	err = n.Cmd.ConfirmSessionOffload(ctx, sessionId, newLocation, opt, func(ctx context.Context, lastVisitedLocation SessionLocation) (bool, error) {
+		return notifyLastVisitedNode(ctx, lastVisitedLocation, newLocation)
 	})
 	// If there is an error, return it.
 	if err != nil {
@@ -140,7 +140,7 @@ func (n *Node) UpdateOffloadedSessionLocation(
 	id string,
 	newLocation SessionLocation,
 ) (clientRedirected bool, err error) {
-	return n.cmd.UpdateOffloadedSessionLocation(ctx, id, newLocation)
+	return n.Cmd.UpdateOffloadedSessionLocation(ctx, id, newLocation)
 }
 
 func (n *Node) ScanOffloadedSessions(
@@ -148,7 +148,7 @@ func (n *Node) ScanOffloadedSessions(
 	cursor uint64,
 	count int64,
 ) (ids []string, newCursor uint64, err error) {
-	return n.cmd.ScanOffloadedSessions(ctx, cursor, count)
+	return n.Cmd.ScanOffloadedSessions(ctx, cursor, count)
 }
 
 // Wrap the readCloser with a check function.

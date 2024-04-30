@@ -25,7 +25,7 @@ func (n *Node) CreateSession(
 	ctx context.Context,
 	opt CreateSessionOptions,
 ) (SessionToken, error) {
-	sessionId, err := n.cmd.CreateSession(ctx, opt)
+	sessionId, err := n.Cmd.CreateSession(ctx, opt)
 
 	// If there is an error, return it.
 	if err != nil {
@@ -46,5 +46,5 @@ func (n *Node) ScanSessions(
 	cursor uint64,
 	count int64,
 ) (ids []string, newCursor uint64, err error) {
-	return n.cmd.ScanSessions(ctx, cursor, count)
+	return n.Cmd.ScanSessions(ctx, cursor, count)
 }

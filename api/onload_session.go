@@ -32,7 +32,7 @@ func (n *Node) OnloadSession(
 	opt OnloadSessionOptions,
 ) (SessionLocation, error) {
 	// Start the onload of the session.
-	sessionId, err := n.cmd.OnloadSession(ctx, metadata, reader, opt)
+	sessionId, err := n.Cmd.OnloadSession(ctx, metadata, reader, opt)
 
 	// If there is an error, return it.
 	if err != nil {

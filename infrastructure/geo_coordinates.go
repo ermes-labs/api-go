@@ -10,6 +10,12 @@ type GeoCoordinates struct {
 	Latitude  float64 `json:"latitude"`
 }
 
+// String returns the string representation of the GeoCoordinates.
+func (g *GeoCoordinates) String() string {
+	data, _ := json.Marshal(g)
+	return string(data)
+}
+
 // NewGeoCoordinates creates a new GeoCoordinates.
 func NewGeoCoordinates(longitude float64, latitude float64) (*GeoCoordinates, error) {
 	coordinates := &GeoCoordinates{

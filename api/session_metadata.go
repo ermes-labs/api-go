@@ -47,7 +47,7 @@ func (n *Node) GetSessionMetadata(
 	ctx context.Context,
 	sessionId string,
 ) (SessionMetadata, error) {
-	return n.cmd.GetSessionMetadata(ctx, sessionId)
+	return n.Cmd.GetSessionMetadata(ctx, sessionId)
 }
 
 // Set the metadata associated with a session.
@@ -56,5 +56,5 @@ func (n *Node) SetSessionMetadata(
 	sessionId string,
 	opt SessionMetadataOptions,
 ) error {
-	return n.cmd.SetSessionMetadata(ctx, sessionId, opt)
+	return n.Cmd.SetSessionMetadata(ctx, sessionId, opt)
 }
